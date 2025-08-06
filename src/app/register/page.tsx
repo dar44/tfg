@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient'; 
 
 export default function RegisterPage() {
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [dni, setDni] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mensaje, setMensaje] = useState('');
@@ -13,7 +16,7 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     // Validación básica
-    if (!email || !password) {
+    if (!name || !surname || !dni || !email || !password) {
       setMensaje('Por favor completa todos los campos');
       return;
     }
@@ -26,7 +29,7 @@ export default function RegisterPage() {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -36,10 +39,28 @@ export default function RegisterPage() {
 
       if (error) {
         setMensaje(error.message);
-      } else {
-        setMensaje('¡Registro exitoso! Por favor verifica tu correo para completar el registro.');
-        // Opcional: Redirigir a página de confirmación
-        router.push('/confirmacion');
+      } else if (data.user) {
+        const user = data.user;
+        const { error: insertError } = await supabase.from('users').insert({
+          id: user.id,
+          name,
+          surname,
+          dni,
+          email,
+          password,
+        });
+
+        if (insertError) {
+          if (insertError.code === '23505') {
+            setMensaje('El email o DNI ya están registrados');
+          } else {
+            setMensaje(insertError.message);
+          }
+        } else {
+          setMensaje('¡Registro exitoso! Por favor verifica tu correo para completar el registro.');
+          // Opcional: Redirigir a página de confirmación
+          router.push('/confirmacion');
+        }
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -57,6 +78,48 @@ export default function RegisterPage() {
       <h1 className="text-2xl font-bold mb-6 text-center">Registro de Usuario</h1>
       
       <div className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            Nombre
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="surname" className="block text-sm font-medium text-gray-700">
+            Apellido
+          </label>
+          <input
+            id="surname"
+            type="text"
+            value={surname}
+            onChange={(e) => setSurname(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="dni" className="block text-sm font-medium text-gray-700">
+            DNI
+          </label>
+          <input
+            id="dni"
+            type="text"
+            value={dni}
+            onChange={(e) => setDni(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            disabled={loading}
+          />
+        </div>
+
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             Correo Electrónico
@@ -107,7 +170,7 @@ export default function RegisterPage() {
           )}
         </button>
 
-        {mensaje && (
+        {mensaje && ( 
           <div className={`mt-4 p-3 rounded-md ${
             mensaje.includes('éxito') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
           }`}>
