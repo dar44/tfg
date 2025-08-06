@@ -21,10 +21,16 @@ export default function DashboardPage() {
         .from('users')
         .select('role')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error || !profile) {
-        console.error('Error obteniendo perfil:', error);
+      if (error) {
+        console.error('Error obteniendo perfil:', error.message);
+        router.push('/login');
+        return;
+      }
+
+      if (!profile) {
+        console.warn('Perfil no encontrado para el usuario:', user.id);
         router.push('/login');
         return;
       }

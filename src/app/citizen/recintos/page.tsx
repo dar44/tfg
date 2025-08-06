@@ -11,13 +11,13 @@ export default async function RecintosPage() {
   if (!user) redirect('/login');
   
   // Verificar rol
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from('users')
     .select('role')
     .eq('id', user.id)
-    .single();
-    
-  if (!profile || profile.role !== 'citizen') redirect('/dashboard');
+    .maybeSingle();
+
+  if (error || !profile || profile.role !== 'citizen') redirect('/dashboard');
 
   return <RecintosList />;
 }

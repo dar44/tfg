@@ -10,13 +10,13 @@ export default async function AdminPage() {
   if (!user) redirect('/login');
   
   // Verificar rol
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from('users')
     .select('role')
     .eq('id', user.id)
-    .single();
-    
-  if (profile?.role !== 'admin') redirect('/dashboard');
+    .maybeSingle();
+
+  if (error || profile?.role !== 'admin') redirect('/dashboard');
 
   return <AdminDashboard />;
 }

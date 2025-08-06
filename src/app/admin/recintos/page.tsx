@@ -11,13 +11,13 @@ export default async function RecintosAdminPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
   
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single();
-    
-  if (profile?.role !== 'admin') redirect('/dashboard');
+
+  if (error || profile?.role !== 'admin') redirect('/dashboard');
 
   return (
     <div className="container mx-auto p-4">
