@@ -5,8 +5,16 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 
+interface Recinto {
+  id: number;
+  name: string;
+  ubication: string;
+  province: string;
+  state: string;
+}
+
 export default function RecintosTable() {
-  const [recintos, setRecintos] = useState<any[]>([]);
+  const [recintos, setRecintos] = useState<Recinto[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +27,7 @@ export default function RecintosTable() {
       if (error) {
         console.error('Error obteniendo recintos:', error);
       } else {
-        setRecintos(data || []);
+        setRecintos(data as Recinto[] || []);
       }
       setLoading(false);
     };

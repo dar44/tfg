@@ -5,8 +5,17 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 
+interface Recinto {
+  id: number;
+  name: string;
+  description: string;
+  ubication: string;
+  province: string;
+  postal_code: string;
+}
+
 export default function RecintosList() {
-  const [recintos, setRecintos] = useState<any[]>([]);
+  const [recintos, setRecintos] = useState<Recinto[]>([]);
   const [loading, setLoading] = useState(true);
   const [provinceFilter, setProvinceFilter] = useState('');
 
@@ -26,7 +35,7 @@ export default function RecintosList() {
       if (error) {
         console.error('Error obteniendo recintos:', error);
       } else {
-        setRecintos(data || []);
+        setRecintos(data as Recinto[] || []);
       }
       setLoading(false);
     };
